@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "topic": "devices/123/data",
+    "deviceId": "123",
+    "message": "Hello Server",
+    "timestamp": "2025-12-06T11:37:00.365Z",
+    "retained": false
+  }
+]
