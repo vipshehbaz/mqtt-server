@@ -46,7 +46,7 @@ client.on("connect", () => {
   console.log("Server (MQTT client) connected to broker");
 
   // Subscribe with QoS 1 to handle retained messages
-  client.subscribe("devices/+/data", { qos: 1 }, (err, granted) => {
+  client.subscribe("#", { qos: 1 }, (err, granted) => {
     if (err) console.error("Subscribe error:", err);
     else console.log("Subscribed to:", granted.map(g => g.topic).join(", "));
   });
