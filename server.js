@@ -65,7 +65,7 @@ client.on("message", (topic, payload, packet) => {
   console.log("Sent response to:", responseTopic);
 
   // Save message
-  saveMessage({ topic, deviceId, message, timestamp: new Date().toISOString(), retained: packet.retain });
+  // saveMessage({ topic, deviceId, message, timestamp: new Date().toISOString(), retained: packet.retain });
 });
 
 // Client error handling
