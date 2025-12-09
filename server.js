@@ -43,9 +43,10 @@ aedes.on("clientDisconnect", (client) => {
 });
 
 aedes.on("publish", (packet, client) => {
-  if (client) {
-    console.log(`📤 Broker: ${client.id} → ${packet.topic}`);
-  }
+  const from = client ? client.id : "BROKER_INTERNAL";
+  console.log(
+    `📨 PUBLISH from=${from} topic=${packet.topic} qos=${packet.qos} retain=${packet.retain}`
+  );
 });
 
 const client = mqtt.connect(`mqtt://localhost:${BROKER_PORT}`);
@@ -53,16 +54,13 @@ const client = mqtt.connect(`mqtt://localhost:${BROKER_PORT}`);
 client.on("connect", () => {
   console.log("✅ Server MQTT client connected to broker");
 
-  client.subscribe("gateway/+/advertisements", { qos: 1 }, (err, granted) => {
+  client.subscribe("#", { qos: 1 }, (err, granted) => {
     if (err) {
       console.error("❌ Subscribe error:", err);
       return;
     }
 
-    console.log(
-      "✅ Subscribed to:",
-      granted.map(g => g.topic).join(", ")
-    );
+    console.log("✅ Subscribed to:", granted.map((g) => g.topic).join(", "));
   });
 });
 
@@ -83,7 +81,7 @@ client.on("message", (topic, payload, packet) => {
   const responseTopic = `devices/${macId}/response`;
   const response = {
     status: "ok",
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 
   client.publish(responseTopic, JSON.stringify(response), { qos: 0 });
@@ -94,7 +92,7 @@ client.on("message", (topic, payload, packet) => {
     macId,
     payload: parsedPayload ?? rawPayload,
     timestamp: new Date().toISOString(),
-    retained: packet.retain === true
+    retained: packet.retain === true,
   });
 });
 
