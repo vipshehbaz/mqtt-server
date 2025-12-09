@@ -54,7 +54,7 @@ const client = mqtt.connect(`mqtt://localhost:${BROKER_PORT}`);
 client.on("connect", () => {
   console.log("✅ Server MQTT client connected to broker");
 
-  client.subscribe("gateway/+/advertisements", { qos: 1 }, (err, granted) => {
+  client.subscribe("#", { qos: 1 }, (err, granted) => {
     if (err) {
       console.error("❌ Subscribe error:", err);
       return;
