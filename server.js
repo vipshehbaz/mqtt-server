@@ -54,7 +54,7 @@ const client = mqtt.connect(`mqtt://localhost:${BROKER_PORT}`);
 client.on("connect", () => {
   console.log("✅ Server MQTT client connected to broker");
 
-  client.subscribe("#", { qos: 1 }, (err, granted) => {
+  client.subscribe("gateway/+/advertisements", { qos: 1 }, (err, granted) => {
     if (err) {
       console.error("❌ Subscribe error:", err);
       return;
@@ -65,6 +65,12 @@ client.on("connect", () => {
 });
 
 client.on("message", (topic, payload, packet) => {
+  if (topic.startsWith("$SYS")) {
+    console.log("Broker heartbeat:", payload.toString());
+    return;
+  }
+
+  console.log("Device message:", topic, payload.toString());
   const rawPayload = payload.toString();
   const parsedPayload = safeJsonParse(rawPayload);
 
