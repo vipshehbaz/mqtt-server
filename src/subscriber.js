@@ -14,7 +14,11 @@ function setupSubscriber(db, brokerPort = 1883) {
 
   client.on("connect", () => {
     console.log("✅ MQTT client connected");
-    client.subscribe("#", { qos: 1 });
+    client.publish("#", JSON.stringify({ temp: 25 }), {}, () => {
+      console.log("Message published");
+      client.end();
+      process.exit(0);
+    });
   });
 
   client.on("message", async (topic, payload, packet) => {
@@ -25,7 +29,7 @@ function setupSubscriber(db, brokerPort = 1883) {
 
     const rawPayload = payload.toString();
     const parsedPayload = safeJsonParse(rawPayload);
-    console.log("Parsed payload", parsedPayload)
+    console.log("Parsed payload", parsedPayload);
     const macId = topic.split("/")[1];
     if (!macId) return;
 
