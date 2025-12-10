@@ -14,40 +14,41 @@ function setupSubscriber(db, brokerPort = 1883) {
 
   client.on("connect", () => {
     console.log("✅ MQTT client connected");
-    client.publish("#", JSON.stringify({ temp: 25 }), {}, () => {
-      console.log("Message published");
-      client.end();
-      process.exit(0);
-    });
+    client.subscribe("gateway/+/temperature", { qos: 1 });
   });
 
   client.on("message", async (topic, payload, packet) => {
-    console.log("Received topic:", topic);
-    console.log("Received payload", payload);
-
+    console.log("Received Topic", topic);
+    console.log("Received Payload", payload);
     if (topic.startsWith("$SYS")) return;
 
-    const rawPayload = payload.toString();
-    const parsedPayload = safeJsonParse(rawPayload);
-    console.log("Parsed payload", parsedPayload);
-    const macId = topic.split("/")[1];
-    if (!macId) return;
+    try {
+      const rawPayload = payload.toString();
+      const parsedPayload = safeJsonParse(rawPayload);
+      console.log("Parsed Payload", parsedPayload);
 
-    const message = {
-      time: new Date(),
-      metadata: { deviceId: macId },
-      payload: parsedPayload ?? rawPayload,
-      retained: packet.retain === true,
-    };
+      const macId = topic.split("/")[1];
+      if (!macId) return;
 
-    await insertDeviceMessage(db, message);
+      const message = {
+        time: new Date(),
+        metadata: { deviceId: macId },
+        payload: parsedPayload ?? rawPayload,
+        retained: packet.retain === true,
+      };
 
-    const responseTopic = `devices/${macId}/response`;
-    client.publish(
-      responseTopic,
-      JSON.stringify({ status: "ok", timestamp: Date.now() }),
-      { qos: 0 }
-    );
+      await insertDeviceMessage(db, message);
+
+      console.log("✅ Message saved to DB for device:", macId);
+
+      client.publish(
+        `devices/${macId}/response`,
+        JSON.stringify({ status: "ok", timestamp: Date.now() }),
+        { qos: 0 }
+      );
+    } catch (err) {
+      console.error("❌ DB insert failed:", err);
+    }
   });
 }
 
